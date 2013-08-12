@@ -1,0 +1,37 @@
+{
+    "name": "rezzza/payment-be2bill-bundle",
+    "description": "Payment Bundle providing access to the Be2bill API",
+    "keywords": ["be2bill", "symfony", "bundle", "payment"],
+    "type": "symfony-bundle",
+    "homepage": "https://github.com/rezzza/PaymentBe2billBundle",
+    "license": "MIT",
+    "authors": [{
+        "name": "Jérémy Romey",
+        "email": "jeremy@free-agent.fr"
+    },{
+        "name": "Contributors",
+        "homepage": "https://github.com/rezzza/PaymentBe2billBundle/contributors"
+    }],
+    "require": {
+        "php": ">=5.3.2",
+        "symfony/browser-kit": "~2.0",
+        "symfony/framework-bundle": "~2.0",
+        "jms/payment-core-bundle": "dev-master"
+    },
+    "require-dev": {
+        "atoum/atoum-bundle": "dev-master"
+    },
+    "autoload":     {
+        "psr-0": { "Rezzza\\PaymentBe2billBundle": "" }
+    },
+    "target-dir": "Rezzza/PaymentBe2billBundle",
+    "minimum-stability": "dev",
+    "config": {
+        "bin-dir": "bin"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
