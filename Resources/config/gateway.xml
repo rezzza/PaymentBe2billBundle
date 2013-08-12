@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="payment.plugin.be2bill_direct_link.class">Rezzza\PaymentBe2billBundle\Plugin\Be2billDirectLinkPlugin</parameter>
+    </parameters>
+
+    <services>
+        <service id="payment.plugin.be2bill_direct_link" class="%payment.plugin.be2bill_direct_link.class%">
+            <argument type="service" id="payment.be2bill.client" />
+            <argument>%payment.be2bill.debug%</argument>
+            <tag name="payment.plugin"/>
+        </service>
+
+    </services>
+</container>
