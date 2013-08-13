@@ -1,3 +1,4 @@
+====================
 PaymentBe2billBundle
 ====================
 
@@ -7,24 +8,37 @@ PaymentBe2billBundle
 .. image:: https://travis-ci.org/rezzza/PaymentBe2billBundle.png?branch=master
    :target: http://travis-ci.org/rezzza/PaymentBe2billBundle
 
-Payment Bundle providing access to the Be2bill API.
+
+A `Be2bill <http://www.be2bill.com/>`_ provider for `JMSPaymentCoreBundle <https://github.com/schmittjoh/JMSPaymentCoreBundle>`_.
+
+**Supports only directLink payments at the moment.**
 
 Installation
 ------------
-Use `Composer <https://github.com/composer/composer/>`_ to install: ``rezzza/payment-be2bill-bundle``.
 
-In your ``composer.json`` you should have:
+With `composer <https://github.com/composer/composer/>`_
+********************************************************
 
-.. code-block:: yaml
+``composer require rezzza/payment-be2bill-bundle``
 
-    {
-        "require": {
-            "rezzza/payment-be2bill-bundle": "1.0.*"
-        }
-    }
+Git clone
+*********
 
-Then update your ``AppKernel.php`` to register the bundle with:
+``git clone git@github.com:rezzza/PaymentBe2billBundle.git``
+
+
+Setup
+-----
+
+Edit your ``AppKernel.php`` to register the bundle into your `Symfony2 <http://symfony.com/>`_ app with:
 
 .. code-block:: php
 
     new Rezzza\PaymentBe2billBundle\RezzzaPaymentBe2billBundle()
+
+
+TODO
+----
+
+- Add web form payment support.
+- Write more unit tests.
