@@ -82,12 +82,12 @@ class Response
 
     public function __toString()
     {
-        return $this->toArray();
+        return $this->toJson();
     }
 
     public function toArray()
     {
-        return var_export($this->body->all(), true);
+        return $this->body->all();
     }
 
     public function toJson()
