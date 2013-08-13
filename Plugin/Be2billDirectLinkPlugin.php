@@ -3,15 +3,8 @@
 namespace Rezzza\PaymentBe2billBundle\Plugin;
 
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
-use JMS\Payment\CoreBundle\Plugin\Exception\PaymentPendingException;
 use JMS\Payment\CoreBundle\Plugin\Exception\FinancialException;
-use JMS\Payment\CoreBundle\Plugin\Exception\CommunicationException;
-use JMS\Payment\CoreBundle\BrowserKit\Request;
-use JMS\Payment\CoreBundle\Plugin\ErrorBuilder;
-use JMS\Payment\CoreBundle\Plugin\Exception\Action\VisitUrl;
-use JMS\Payment\CoreBundle\Plugin\Exception\ActionRequiredException;
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
-use JMS\Payment\CoreBundle\Model\PaymentInstructionInterface;
 use JMS\Payment\CoreBundle\Plugin\AbstractPlugin;
 use Rezzza\PaymentBe2billBundle\Client\Client;
 
