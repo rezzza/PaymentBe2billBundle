@@ -6,6 +6,14 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
+ * This file is part of the RezzzaPaymentBe2billBundle package.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @license MIT License
+ */
+
+/**
  * @author Jérémy Romey <jeremy@free-agent.fr>
  */
 class Configuration implements ConfigurationInterface
