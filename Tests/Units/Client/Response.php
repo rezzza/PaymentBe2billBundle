@@ -7,7 +7,6 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use mageekguy\atoum;
 use Rezzza\PaymentBe2billBundle\Client\Response as TestedResponse;
 
-
 /**
  * Response
  *
