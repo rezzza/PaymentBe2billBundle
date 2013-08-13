@@ -6,19 +6,31 @@ use JMS\Payment\CoreBundle\BrowserKit\Request;
 use JMS\Payment\CoreBundle\Plugin\Exception\CommunicationException;
 
 /**
+ * This file is part of the RezzzaPaymentBe2billBundle package.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @license MIT License
+ */
+
+/**
  * @author Jérémy Romey <jeremy@free-agent.fr>
  */
 class Client
 {
+    protected $apiEndPoints;
     protected $identifier;
     protected $password;
-    protected $apiEndPoints;
     protected $isDebug;
     protected $curlOptions;
 
-    public function __construct($identifier, $password, $apiEndPoints, $isDebug = false)
+    public function __construct($identifier, $password, $isDebug = false)
     {
-        $apiEndPoints = array(
+        $this->identifier = $identifier;
+        $this->password = $password;
+        $this->isDebug = (bool) $isDebug;
+        $this->curlOptions = array();
+        $this->apiEndPoints = array(
             'sandbox' => array(
                 'https://secure-test.be2bill.com/front/service/rest/process',
             ),
@@ -27,11 +39,6 @@ class Client
                 'https://secure-magenta2.be2bill.com/front/service/rest/process.php',
             ),
         );
-        $this->identifier = $identifier;
-        $this->password = $password;
-        $this->apiEndPoints = $apiEndPoints;
-        $this->isDebug = (bool) $isDebug;
-        $this->curlOptions = array();
     }
 
     public function setDebug($isDebug)
