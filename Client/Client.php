@@ -23,7 +23,8 @@ class Client
                 'https://secure-test.be2bill.com/front/service/rest/process',
             ),
             'production' => array(
-                'https://secure.be2bill.com/front/service/rest/process',
+                'https://secure-magenta1.be2bill.com/front/service/rest/process.php',
+                'https://secure-magenta2.be2bill.com/front/service/rest/process.php',
             ),
         );
         $this->identifier = $identifier;
