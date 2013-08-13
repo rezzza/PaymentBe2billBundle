@@ -16,6 +16,14 @@ use JMS\Payment\CoreBundle\Plugin\AbstractPlugin;
 use Rezzza\PaymentBe2billBundle\Client\Client;
 
 /**
+ * This file is part of the RezzzaPaymentBe2billBundle package.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @license MIT License
+ */
+
+/**
  * Be2bill direct link plugin
  *
  * @author Jérémy Romey <jeremy@free-agent.fr>
