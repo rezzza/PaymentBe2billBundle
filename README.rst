@@ -8,7 +8,7 @@ PaymentBe2billBundle
 .. image:: https://travis-ci.org/rezzza/PaymentBe2billBundle.png?branch=master
    :target: http://travis-ci.org/rezzza/PaymentBe2billBundle
 
-.. image:: https://insight.sensiolabs.com/projects/164c2857-988e-4444-9952-de29f82cef08/mini.png
+.. image:: https://insight.sensiolabs.com/projects/164c2857-988e-4444-9952-de29f82cef08/small.png
    :target: https://insight.sensiolabs.com/projects/164c2857-988e-4444-9952-de29f82cef08
 
 A `Be2bill <http://www.be2bill.com/>`_ provider for `JMSPaymentCoreBundle <https://github.com/schmittjoh/JMSPaymentCoreBundle>`_.
