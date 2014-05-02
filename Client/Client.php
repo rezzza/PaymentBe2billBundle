@@ -65,27 +65,29 @@ class Client
             $parameters['AMOUNT'] = $this->convertAmountToBe2billFormat($parameters['AMOUNT']);
         }
 
-        $parameters = $this->sortParameters($parameters);
-
-        $hash = $this->getSignature($this->password, $parameters);
-        $parameters['HASH'] = $hash;
+        $parameters         = $this->sortParameters($parameters);
+        $parameters['HASH'] = $this->getSignature($this->password, $parameters);
 
         $parameters = array(
             'method' => $operation,
             'params' => $parameters,
         );
 
-        $parameters = $this->sortParameters($parameters);
-
-        return $parameters;
+        return $this->sortParameters($parameters);
     }
 
     public function requestPayment(array $parameters)
     {
-        $parameters = $this->sortParameters($parameters);
-        $parameters = $this->configureParameters('payment', $parameters);
+        return $this->sendApiRequest(
+            $this->configureParameters('payment', $parameters)
+        );
+    }
 
-        return $this->sendApiRequest($parameters);
+    public function requestRefund(array $parameters)
+    {
+        return $this->sendApiRequest(
+            $this->configureParameters('refund', $parameters)
+        );
     }
 
     public function sendApiRequest(array $parameters)

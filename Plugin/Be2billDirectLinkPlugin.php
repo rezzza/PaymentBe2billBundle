@@ -48,14 +48,17 @@ class Be2billDirectLinkPlugin extends AbstractPlugin
     public function approve(FinancialTransactionInterface $transaction, $retry)
     {
         $transaction->setProcessedAmount($transaction->getPayment()->getTargetAmount());
-        $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_PENDING);
+        $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_SUCCESS);
+        $transaction->setReasonCode(PluginInterface::REASON_CODE_SUCCESS);
     }
 
-    function deposit(FinancialTransactionInterface $transaction, $retry)
+    public function deposit(FinancialTransactionInterface $transaction, $retry)
     {
         $parameters = $transaction->getPayment()->getPaymentInstruction()->getExtendedData()->get('be2bill_direct_link_params');
 
         $response = $this->client->requestPayment($parameters);
+
+        $transaction->setTrackingId($response->getTransactionId());
 
         if (!$response->isSuccess()) {
             $exception = new FinancialException(sprintf('Deposit : transaction "%s" is not valid', $response->getTransactionId()));
@@ -67,6 +70,28 @@ class Be2billDirectLinkPlugin extends AbstractPlugin
         }
 
         $transaction->setProcessedAmount($transaction->getPayment()->getTargetAmount());
+        $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_SUCCESS);
+        $transaction->setReasonCode(PluginInterface::REASON_CODE_SUCCESS);
+    }
+
+    public function credit(FinancialTransactionInterface $transaction, $retry)
+    {
+        $parameters = $transaction->getCredit()->getPaymentInstruction()->getExtendedData()->get('be2bill_direct_link_params');
+
+        $response = $this->client->requestRefund($parameters);
+
+        $transaction->setTrackingId($response->getTransactionId());
+
+        if (!$response->isSuccess()) {
+            $exception = new FinancialException(sprintf('Credit: transaction "%s" is not valid', $response->getTransactionId()));
+            $exception->setFinancialTransaction($transaction);
+            $transaction->setResponseCode($response->getExecutionCode());
+            $transaction->setReasonCode($response->getMessage());
+
+            throw $exception;
+        }
+
+        $transaction->setProcessedAmount($transaction->getCredit()->getTargetAmount());
         $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_SUCCESS);
         $transaction->setReasonCode(PluginInterface::REASON_CODE_SUCCESS);
     }

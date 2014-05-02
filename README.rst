@@ -13,7 +13,7 @@ PaymentBe2billBundle
 
 A `Be2bill <http://www.be2bill.com/>`_ provider for `JMSPaymentCoreBundle <https://github.com/schmittjoh/JMSPaymentCoreBundle>`_.
 
-**Supports only directLink payments at the moment.**
+**Supports only directLink payments, credits at the moment.**
 
 Installation
 ------------
