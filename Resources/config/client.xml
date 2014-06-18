@@ -13,6 +13,7 @@
             <argument>%payment.be2bill.identifier%</argument>
             <argument>%payment.be2bill.password%</argument>
             <argument>%payment.be2bill.debug%</argument>
+            <argument>%payment.be2bill.default_3ds_display_mode%</argument>
         </service>
 
     </services>

@@ -18,17 +18,26 @@ use JMS\Payment\CoreBundle\Plugin\Exception\CommunicationException;
  */
 class Client
 {
+    const PAYMENT_OPERATION = 'payment';
+    const AUTHORIZATION_OPERATION = 'authorization';
+    const REFUND_OPERATION = 'refund';
+
+    const SECURE_3DS_PARAM = '3DSECURE';
+    const DISPLAY_MODE_3DS_PARAM = '3DSECUREDISPLAYMODE';
+
     protected $apiEndPoints;
     protected $identifier;
     protected $password;
     protected $isDebug;
     protected $curlOptions;
+    protected $default3dsDisplayMode;
 
-    public function __construct($identifier, $password, $isDebug = false)
+    public function __construct($identifier, $password, $isDebug, $default3dsDisplayMode)
     {
         $this->identifier = $identifier;
         $this->password = $password;
         $this->isDebug = (bool) $isDebug;
+        $this->default3dsDisplayMode = $default3dsDisplayMode;
         $this->curlOptions = array();
         $this->apiEndPoints = array(
             'sandbox' => array(
@@ -58,6 +67,8 @@ class Client
 
     public function configureParameters($operation, array $parameters)
     {
+        $this->configure3dsParameters($operation, $parameters);
+
         $parameters['IDENTIFIER'] = $this->identifier;
         $parameters['OPERATIONTYPE'] = $operation;
 
@@ -76,17 +87,51 @@ class Client
         return $this->sortParameters($parameters);
     }
 
+    private function configure3dsParameters($operation, array &$parameters)
+    {
+        // 3DS is only supported on payment and authorization operations
+        if (self::AUTHORIZATION_OPERATION !== $operation && self::PAYMENT_OPERATION!== $operation) {
+            if (isset($parameters[self::SECURE_3DS_PARAM])) {
+                unset($parameters[self::SECURE_3DS_PARAM]);
+            }
+            if (isset($parameters[self::DISPLAY_MODE_3DS_PARAM])) {
+                unset($parameters[self::DISPLAY_MODE_3DS_PARAM]);
+            }
+
+            return;
+        }
+
+        // Set the default mode if not set
+        if ($this->is3dsEnabledFromParameters($parameters)) {
+            if (!isset($parameters[self::DISPLAY_MODE_3DS_PARAM])) {
+                $parameters[self::DISPLAY_MODE_3DS_PARAM] = $this->default3dsDisplayMode;
+            }
+        }
+    }
+
+    /**
+     * Checks if 3DS is enabled by inspecting the parameters.
+     *
+     * @param array $parameters
+     *
+     * @return boolean
+     */
+    private function is3dsEnabledFromParameters(array $parameters)
+    {
+        return isset($parameters[self::SECURE_3DS_PARAM]) && 'yes' === $parameters[self::SECURE_3DS_PARAM];
+    }
+
     public function requestPayment(array $parameters)
     {
         return $this->sendApiRequest(
-            $this->configureParameters('payment', $parameters)
+            $this->configureParameters(self::PAYMENT_OPERATION, $parameters)
         );
     }
 
     public function requestRefund(array $parameters)
     {
         return $this->sendApiRequest(
-            $this->configureParameters('refund', $parameters)
+            $this->configureParameters(self::REFUND_OPERATION, $parameters)
         );
     }
 
@@ -103,11 +148,14 @@ class Client
                 $parameters
             );
 
+            // If the request is secure, we set a flag on the response to process it easier
+            $secure = $this->is3dsEnabledFromParameters($parameters);
+
             $response = $this->request($request);
             if (200 === $response->getStatus()) {
                 $parameters = json_decode($response->getContent(), true);
 
-                return new Response($parameters);
+                return new Response($parameters, $secure);
             }
         }
 

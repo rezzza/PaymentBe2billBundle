@@ -7,6 +7,7 @@ use JMS\Payment\CoreBundle\Plugin\Exception\FinancialException;
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
 use JMS\Payment\CoreBundle\Plugin\AbstractPlugin;
 use Rezzza\PaymentBe2billBundle\Client\Client;
+use Rezzza\PaymentBe2billBundle\Plugin\Exception\SecureActionRequiredException;
 
 /**
  * This file is part of the RezzzaPaymentBe2billBundle package.
@@ -65,6 +66,13 @@ class Be2billDirectLinkPlugin extends AbstractPlugin
             $exception->setFinancialTransaction($transaction);
             $transaction->setResponseCode($response->getExecutionCode());
             $transaction->setReasonCode($response->getMessage());
+
+            throw $exception;
+        }
+
+        if ($response->isSecure()) {
+            $exception = new SecureActionRequiredException(sprintf('Deposit : transaction "%s" waits approval by 3DS', $response->getTransactionId()));
+            $exception->setHtml($response->getSecureHtml());
 
             throw $exception;
         }

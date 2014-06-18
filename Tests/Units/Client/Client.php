@@ -26,13 +26,13 @@ class Client extends atoum\test
     public function testConstruct()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->boolean($client->getDebug())
                     ->isFalse()
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', true))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', true, 'main'))
                 ->boolean($client->getDebug())
                     ->isTrue()
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->boolean($client->getDebug())
                     ->isFalse()
         ;
@@ -41,7 +41,7 @@ class Client extends atoum\test
     public function testSetDebug()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->boolean($client->getDebug())
                     ->isFalse()
             ->if($client->setDebug(true))
@@ -66,7 +66,7 @@ class Client extends atoum\test
         );
 
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->array($client->getApiEndpoints(false))
                     ->isIdenticalTo($apiEndPoints['production'])
             ->if($client->setDebug(true))
@@ -78,7 +78,7 @@ class Client extends atoum\test
     public function testSortParameters()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
             ->and($parameters = array(
                 'CLIENTIDENT'      => '404',
                 'CLIENTREFERRER'   => 'example.org',
@@ -118,10 +118,10 @@ class Client extends atoum\test
     public function testConvertAmountToBe2billFormat()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->integer($amount = $client->convertAmountToBe2billFormat('23.99'))
                     ->isIdenticalTo(2399)
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
                 ->integer($client->convertAmountToBe2billFormat('23'))
                     ->isIdenticalTo(2300)
         ;
@@ -130,13 +130,52 @@ class Client extends atoum\test
     public function testGetSignature()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache'))
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
             ->and($parameters = array(
                 'CLIENTREFERRER'=> 'example.org',
                 'CLIENTIDENT'   => '404',
             ))
                 ->string($client->getSignature('CuirMoustache', $parameters))
                     ->isIdenticalTo(hash('sha256', 'CuirMoustacheCLIENTIDENT=404CuirMoustacheCLIENTREFERRER=example.orgCuirMoustache'))
+        ;
+    }
+
+    public function testConfigure3dsParametersUnsupportedOperation()
+    {
+        $this
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
+            ->and($parameters = array('3DSECURE' => 'yes', '3DSECUREDISPLAYMODE' => 'main'))
+            ->and($parameters = $client->configureParameters('invalid', $parameters))
+                ->array($params = $parameters['params'])
+                    ->notHasKeys(array('3DSECURE', '3DSECUREDISPLAYMODE'))
+        ;
+    }
+
+    public function testConfigure3dsParameters()
+    {
+        $this
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
+            ->and($parameters = array('3DSECURE' => 'yes', '3DSECUREDISPLAYMODE' => 'top'))
+            ->and($parameters = $client->configureParameters('payment', $parameters))
+            ->and($params = $parameters['params'])
+                ->string($params['3DSECURE'])
+                    ->isEqualTo('yes')
+                ->string($params['3DSECUREDISPLAYMODE'])
+                    ->isEqualTo('top')
+        ;
+    }
+
+    public function testConfigure3dsParametersDefaultMode()
+    {
+        $this
+            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
+            ->and($parameters = array('3DSECURE' => 'yes'))
+            ->and($parameters = $client->configureParameters('payment', $parameters))
+            ->and($params = $parameters['params'])
+                ->string($params['3DSECURE'])
+                    ->isEqualTo('yes')
+                ->string($params['3DSECUREDISPLAYMODE'])
+                    ->isEqualTo('main')
         ;
     }
 }
