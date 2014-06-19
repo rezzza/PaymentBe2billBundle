@@ -93,10 +93,10 @@ class Response extends atoum\test
                     ->isFalse()
             ->if($response = new TestedResponse(array('EXECCODE' => '0001'), true))
                 ->boolean($response->isSuccess())
-                    ->isTrue()
+                    ->isFalse()
             ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
                 ->boolean($response->isSuccess())
-                    ->isFalse()
+                    ->isTrue()
         ;
     }
 
@@ -114,10 +114,10 @@ class Response extends atoum\test
                     ->isTrue()
             ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
                 ->boolean($response->isError())
-                    ->isTrue()
-            ->if($response = new TestedResponse(array('EXECCODE' => '0001'), true))
-                ->boolean($response->isError())
                     ->isFalse()
+            ->if($response = new TestedResponse(array('EXECCODE' => '9999'), true))
+                ->boolean($response->isError())
+                    ->isTrue()
         ;
     }
 
@@ -238,17 +238,17 @@ class Response extends atoum\test
         ;
     }
 
-    public function testIsSecure()
+    public function testIsSecureActionRequired()
     {
         $this
-            ->if($response = new TestedResponse(array()))
-                ->boolean($response->isSecure())
+            ->if($response = new TestedResponse(array('EXECCODE' => '0001')))
+                ->boolean($response->isSecureActionRequired())
                     ->isFalse()
-            ->if($response = new TestedResponse(array(), false))
-                ->boolean($response->isSecure())
+            ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
+                ->boolean($response->isSecureActionRequired())
                     ->isFalse()
-            ->if($response = new TestedResponse(array(), true))
-                ->boolean($response->isSecure())
+            ->if($response = new TestedResponse(array('EXECCODE' => '0001'), true))
+                ->boolean($response->isSecureActionRequired())
                     ->isTrue()
         ;
     }

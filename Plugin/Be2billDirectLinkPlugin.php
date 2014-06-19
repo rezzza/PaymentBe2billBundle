@@ -61,18 +61,18 @@ class Be2billDirectLinkPlugin extends AbstractPlugin
 
         $transaction->setTrackingId($response->getTransactionId());
 
+        if ($response->isSecureActionRequired()) {
+            $exception = new SecureActionRequiredException(sprintf('Deposit : transaction "%s" waits approval by 3DS', $response->getTransactionId()));
+            $exception->setHtml($response->getSecureHtml());
+
+            throw $exception;
+        }
+
         if (!$response->isSuccess()) {
             $exception = new FinancialException(sprintf('Deposit : transaction "%s" is not valid', $response->getTransactionId()));
             $exception->setFinancialTransaction($transaction);
             $transaction->setResponseCode($response->getExecutionCode());
             $transaction->setReasonCode($response->getMessage());
-
-            throw $exception;
-        }
-
-        if ($response->isSecure()) {
-            $exception = new SecureActionRequiredException(sprintf('Deposit : transaction "%s" waits approval by 3DS', $response->getTransactionId()));
-            $exception->setHtml($response->getSecureHtml());
 
             throw $exception;
         }

@@ -57,18 +57,20 @@ class Response
         return $this->body->get('3DSECUREHTML');
     }
 
-    public function isSecure()
+    /**
+     * Tells if an action needs to be performed by the user
+     * in the context of a 3DS transaction.
+     *
+     * @return boolean
+     */
+    public function isSecureActionRequired()
     {
-        return $this->secure;
+        return $this->secure && '0001' === $this->getExecutionCode();
     }
 
     public function isSuccess()
     {
-        if ($this->secure) {
-            return '0001' == $this->getExecutionCode();
-        }
-
-        return '0000' == $this->getExecutionCode();
+        return '0000' === $this->getExecutionCode();
     }
 
     public function isError()
