@@ -149,7 +149,7 @@ class Client
             );
 
             // If the request is secure, we set a flag on the response to process it easier
-            $secure = $this->is3dsEnabledFromParameters($parameters);
+            $secure = $this->is3dsEnabledFromParameters($parameters['params']);
 
             $response = $this->request($request);
             if (200 === $response->getStatus()) {
