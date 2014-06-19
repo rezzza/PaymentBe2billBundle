@@ -61,6 +61,15 @@ class Response extends atoum\test
         ;
     }
 
+    public function testGetSecureHtml()
+    {
+        $this
+            ->if($response = new TestedResponse(array('3DSECUREHTML' => '<html></html>')))
+                ->string($response->getSecureHtml())
+                    ->isIdenticalTo('<html></html>')
+        ;
+    }
+
     public function testGetMessage()
     {
         $this
@@ -82,6 +91,12 @@ class Response extends atoum\test
             ->if($response = new TestedResponse(array()))
                 ->boolean($response->isSuccess())
                     ->isFalse()
+            ->if($response = new TestedResponse(array('EXECCODE' => '0001'), true))
+                ->boolean($response->isSuccess())
+                    ->isTrue()
+            ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
+                ->boolean($response->isSuccess())
+                    ->isFalse()
         ;
     }
 
@@ -97,20 +112,11 @@ class Response extends atoum\test
             ->if($response = new TestedResponse(array()))
                 ->boolean($response->isError())
                     ->isTrue()
-        ;
-    }
-
-    public function testIs3dSecureError()
-    {
-        $this
-            ->if($response = new TestedResponse(array('EXECCODE' => '0001')))
-                ->boolean($response->is3dSecureError())
+            ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
+                ->boolean($response->isError())
                     ->isTrue()
-            ->if($response = new TestedResponse(array('EXECCODE' => '0000')))
-                ->boolean($response->is3dSecureError())
-                    ->isFalse()
-            ->if($response = new TestedResponse(array()))
-                ->boolean($response->is3dSecureError())
+            ->if($response = new TestedResponse(array('EXECCODE' => '0001'), true))
+                ->boolean($response->isError())
                     ->isFalse()
         ;
     }
@@ -229,6 +235,21 @@ class Response extends atoum\test
                     ->isInstanceOf('Symfony\Component\HttpFoundation\ParameterBag')
                 ->array($response->toArray())
                     ->isIdenticalTo(array('chuck' => 'norris'))
+        ;
+    }
+
+    public function testIsSecure()
+    {
+        $this
+            ->if($response = new TestedResponse(array()))
+                ->boolean($response->isSecure())
+                    ->isFalse()
+            ->if($response = new TestedResponse(array(), false))
+                ->boolean($response->isSecure())
+                    ->isFalse()
+            ->if($response = new TestedResponse(array(), true))
+                ->boolean($response->isSecure())
+                    ->isTrue()
         ;
     }
 

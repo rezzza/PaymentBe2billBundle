@@ -17,21 +17,29 @@ use Symfony\Component\HttpFoundation\ParameterBag;
  */
 class Response
 {
+    private $secure;
     public $body;
 
-    public function __construct(array $parameters)
+    /**
+     * Creates a new response.
+     *
+     * @param array   $parameters An array of parameters
+     * @param boolean $secure     True if 3DS was used for the request
+     */
+    public function __construct(array $parameters, $secure = false)
     {
         $this->body = new ParameterBag($parameters);
+        $this->secure = $secure;
     }
 
     public function getOperationType()
     {
-        return $this->body->get('OPERATIONTYPE', null);
+        return $this->body->get('OPERATIONTYPE');
     }
 
     public function getTransactionId()
     {
-        return $this->body->get('TRANSACTIONID', null);
+        return $this->body->get('TRANSACTIONID');
     }
 
     public function getExecutionCode()
@@ -44,19 +52,28 @@ class Response
         return $this->body->get('MESSAGE');
     }
 
+    public function getSecureHtml()
+    {
+        return $this->body->get('3DSECUREHTML');
+    }
+
+    public function isSecure()
+    {
+        return $this->secure;
+    }
+
     public function isSuccess()
     {
+        if ($this->secure) {
+            return '0001' == $this->getExecutionCode();
+        }
+
         return '0000' == $this->getExecutionCode();
     }
 
     public function isError()
     {
-        return !$this->isSuccess();
-    }
-
-    public function is3dSecureError()
-    {
-        return '0001' == $this->getExecutionCode();
+        return !$this->isSuccess($this->secure);
     }
 
     public function isValidationError()

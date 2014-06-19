@@ -31,6 +31,13 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('debug')->defaultValue('%kernel.debug%')->end()
                     ->scalarNode('identifier')->isRequired()->cannotBeEmpty()->end()
                     ->scalarNode('password')->isRequired()->cannotBeEmpty()->end()
+                    ->scalarNode('default_3ds_display_mode')
+                        ->defaultValue('main')
+                        ->validate()
+                            ->ifNotInArray(array('main', 'popup', 'top'))
+                            ->thenInvalid('Invalid 3d secure display mode "%s"')
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
         ;
