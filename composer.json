@@ -19,7 +19,8 @@
         "jms/payment-core-bundle": "~1.0"
     },
     "require-dev": {
-        "atoum/atoum-bundle": "dev-master"
+        "atoum/atoum-bundle": "dev-master",
+        "doctrine/orm": "*"
     },
     "autoload":     {
         "psr-0": { "Rezzza\\PaymentBe2billBundle": "" }

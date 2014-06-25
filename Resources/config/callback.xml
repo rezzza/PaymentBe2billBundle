@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="payment.be2bill.callback.3ds_controller.class">Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallback3dsController</parameter>
+    </parameters>
+
+    <services>
+        <service id="payment.be2bill.callback.3ds_controller" class="%payment.be2bill.callback.3ds_controller.class%">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument>%payment.plugin_controller.entity.options.financial_transaction_class%</argument>
+        </service>
+    </services>
+
+</container>
