@@ -9,7 +9,7 @@ before_script:
   - COMPOSER_ROOT_VERSION=dev-master php composer.phar install --dev
 
 script:
-  - bin/atoum -d Tests/Units
+  - bin/atoum
 
 notifications:
   email:

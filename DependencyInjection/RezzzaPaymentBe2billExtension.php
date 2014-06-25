@@ -33,6 +33,7 @@ class RezzzaPaymentBe2billExtension extends Extension
 
         $xmlLoader->load('client.xml');
         $xmlLoader->load('gateway.xml');
+        $xmlLoader->load('callback.xml');
 
         $container->setParameter('payment.be2bill.debug', $config['debug']);
         $container->setParameter('payment.be2bill.identifier', $config['identifier']);
