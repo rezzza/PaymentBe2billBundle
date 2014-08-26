@@ -6,6 +6,8 @@ use JMS\Payment\CoreBundle\Plugin\PluginInterface;
 use JMS\Payment\CoreBundle\Plugin\Exception\FinancialException;
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
 use JMS\Payment\CoreBundle\Plugin\AbstractPlugin;
+use JMS\Payment\CoreBundle\Entity\ExtendedData;
+
 use Rezzza\PaymentBe2billBundle\Client\Client;
 use Rezzza\PaymentBe2billBundle\Plugin\Exception\SecureActionRequiredException;
 
@@ -66,6 +68,12 @@ class Be2billDirectLinkPlugin extends AbstractPlugin
             $exception->setHtml($response->getSecureHtml());
 
             throw $exception;
+        }
+
+        if ($response->getAlias()) {
+            $extendedData = new ExtendedData;
+            $extendedData->set('ALIAS', $response->getAlias());
+            $transaction->setExtendedData($extendedData);
         }
 
         if (!$response->isSuccess()) {
