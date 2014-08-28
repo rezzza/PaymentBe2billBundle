@@ -57,6 +57,11 @@ class Response
         return $this->body->get('3DSECUREHTML');
     }
 
+    public function getAlias()
+    {
+        return $this->body->get('ALIAS');
+    }
+
     /**
      * Tells if an action needs to be performed by the user
      * in the context of a 3DS transaction.
