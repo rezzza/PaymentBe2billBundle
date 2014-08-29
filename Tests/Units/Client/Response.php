@@ -241,7 +241,7 @@ class Response extends atoum\test
         $this
             ->if($response = new TestedResponse(array('EXECCODE' => '0001')))
                 ->boolean($response->isSecureActionRequired())
-                    ->isFalse()
+                    ->isTrue()
             ->if($response = new TestedResponse(array('EXECCODE' => '0000'), true))
                 ->boolean($response->isSecureActionRequired())
                     ->isFalse()

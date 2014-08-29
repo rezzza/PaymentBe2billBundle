@@ -70,7 +70,7 @@ class Response
      */
     public function isSecureActionRequired()
     {
-        return $this->secure && '0001' === $this->getExecutionCode();
+        return '0001' === $this->getExecutionCode();
     }
 
     public function isSuccess()
@@ -80,7 +80,7 @@ class Response
 
     public function isError()
     {
-        return !$this->isSuccess($this->secure);
+        return !$this->isSuccess();
     }
 
     public function isValidationError()
