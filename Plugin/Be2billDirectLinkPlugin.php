@@ -27,7 +27,6 @@ use Rezzza\PaymentBe2billBundle\Plugin\Exception\SecureActionRequiredException;
 class Be2billDirectLinkPlugin extends AbstractPlugin
 {
     protected $client;
-    protected $apiEndPoints;
 
     public function __construct(Client $client, $isDebug)
     {

@@ -14,13 +14,14 @@
     }],
     "require": {
         "php": ">=5.3.2",
-        "symfony/browser-kit": "~2.0",
         "symfony/framework-bundle": "~2.0",
-        "jms/payment-core-bundle": "~1.0"
+        "jms/payment-core-bundle": "~1.0",
+        "guzzle/http": "~3.1"
     },
     "require-dev": {
         "atoum/atoum-bundle": "dev-master",
-        "doctrine/orm": "*"
+        "doctrine/orm": "*",
+        "guzzle/plugin-mock": "~3.1"
     },
     "autoload":     {
         "psr-0": { "Rezzza\\PaymentBe2billBundle": "" }
