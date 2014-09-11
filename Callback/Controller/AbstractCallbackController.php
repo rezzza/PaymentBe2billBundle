@@ -17,7 +17,7 @@ abstract class AbstractCallbackController implements CallbackControllerInterface
     /**
      * Performs the approval and deposit of a callback request.
      *
-     * @param Callback3dsRequest            $request
+     * @param Be2BillRequest            $request
      * @param FinancialTransactionInterface $transaction
      *
      * @throws \RuntimeException
@@ -39,7 +39,7 @@ abstract class AbstractCallbackController implements CallbackControllerInterface
      * Marks the transaction and related payment failed.
      *
      * @param FinancialTransactionInterface $transaction
-     * @param Callback3dsRequest            $request
+     * @param Be2BillRequest            $request
      */
     private function fail(FinancialTransactionInterface $transaction, Be2BillRequest $request)
     {

@@ -6,7 +6,7 @@ use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
 use JMS\Payment\CoreBundle\Model\PaymentInterface;
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
 use mageekguy\atoum;
-use Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallback3dsController as TestedController;
+use Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallbackController as TestedController;
 
 /**
  * This file is part of the RezzzaPaymentBe2billBundle package.
@@ -17,12 +17,12 @@ use Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallback3dsController 
  */
 
 /**
- * EntityCallback3dsController.
+ * EntityCallbackController.
  *
  * @uses atoum\test
  * @author Florian Voutzinos <florian@voutzinos.com>
  */
-class EntityCallback3dsController extends atoum\test
+class EntityCallbackController extends atoum\test
 {
     public function testHandleSuccess()
     {
@@ -32,7 +32,7 @@ class EntityCallback3dsController extends atoum\test
 
         // Request
         $this->mockGenerator->orphanize('__construct');
-        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest();
+        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
         $request->getMockController()->isSuccess = true;
         $request->getMockController()->getTransactionId = $transactionId;
 
@@ -141,7 +141,7 @@ class EntityCallback3dsController extends atoum\test
 
         // Request
         $this->mockGenerator->orphanize('__construct');
-        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest();
+        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
         $request->getMockController()->isSuccess = false;
         $request->getMockController()->getTransactionId = $transactionId;
         $request->getMockController()->getExecCode = $execCode;
@@ -234,7 +234,7 @@ class EntityCallback3dsController extends atoum\test
     {
         // Request
         $this->mockGenerator->orphanize('__construct');
-        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest();
+        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
 
         // Financial transaction
         $transaction = new \mock\JMS\Payment\CoreBundle\Entity\FinancialTransaction();
@@ -262,7 +262,7 @@ class EntityCallback3dsController extends atoum\test
     {
         // Request
         $this->mockGenerator->orphanize('__construct');
-        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest();
+        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
 
         // Repository
         $this->mockGenerator->orphanize('__construct');
