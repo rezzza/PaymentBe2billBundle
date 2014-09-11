@@ -5,6 +5,9 @@ namespace Rezzza\PaymentBe2billBundle\Callback;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
+use Rezzza\PaymentBe2billBundle\Client\Be2BillExecCode;
+use Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator;
+
 class Be2BillRequest
 {
     private $execCode;
@@ -15,35 +18,30 @@ class Be2BillRequest
 
     private $message;
 
-    private $hash;
-
-    private $params;
-
-    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message, $hash, ParameterBag $params)
+    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message)
     {
         $this->execCode = $execCode;
         $this->transactionId = $transactionId;
         $this->orderId = $orderId;
         $this->message = $message;
-        $this->hash = $hash;
-        $this->params = $params;
     }
 
-    public static function createFromRequest(Request $request)
+    public static function createFromRequest(Request $request, ParametersHashGenerator $hashGenerator)
     {
+        $params = $request->request;
+        $hash = $params->get('HASH');
+        $params->remove('HASH');
+
+        if ($hashGenerator->hash($params->all()) !== $hash) {
+            throw new InvalidBe2BillRequestException;
+        }
+
         return new self(
             new Be2BillExecCode($request->query->get('EXECCODE')),
             $request->query->get('TRANSACTIONID'),
             $request->query->get('ORDERID'),
-            $request->query->get('MESSAGE'),
-            $request->query->get('HASH'),
-            $request->request
+            $request->query->get('MESSAGE')
         );
-    }
-
-    private function validSignature($hashGenerator)
-    {
-
     }
 
     /**
@@ -53,7 +51,7 @@ class Be2BillRequest
      */
     public function isSuccess()
     {
-        return '0000' === $this->execCode->isSuccess();
+        return $this->execCode->isSuccess();
     }
 
     /**
