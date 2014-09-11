@@ -2,9 +2,6 @@
 
 namespace Rezzza\PaymentBe2billBundle\Callback;
 
-use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\HttpFoundation\Request;
-
 use Rezzza\PaymentBe2billBundle\Client\Be2BillExecCode;
 use Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator;
 
@@ -26,21 +23,19 @@ class Be2BillRequest
         $this->message = $message;
     }
 
-    public static function createFromRequest(Request $request, ParametersHashGenerator $hashGenerator)
+    public static function create($execCode, $transactionId, $orderId, $message, $hash, array $params, ParametersHashGenerator $hashGenerator)
     {
-        $params = $request->request;
-        $hash = $params->get('HASH');
-        $params->remove('HASH');
+        unset($params['HASH']);
 
-        if ($hashGenerator->hash($params->all()) !== $hash) {
+        if ($hashGenerator->hash($params) !== $hash) {
             throw new InvalidBe2BillRequestException;
         }
 
         return new self(
-            new Be2BillExecCode($request->query->get('EXECCODE')),
-            $request->query->get('TRANSACTIONID'),
-            $request->query->get('ORDERID'),
-            $request->query->get('MESSAGE')
+            new Be2BillExecCode($execCode),
+            $transactionId,
+            $orderId,
+            $message
         );
     }
 

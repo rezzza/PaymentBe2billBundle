@@ -30,14 +30,21 @@ class Be2BillRequest extends atoum\test
                     'IDENTIFIER' => 'VERYLASTROOM',
                     'OPERATIONTYPE' => 'payment',
                     'TRANSACTIONID' => 'A55555',
-                    '3DSECURE' => 'YES',
+                    '3DSECURE' => 'YES'
                 ),
                 $mockHashGenerator = new \mock\Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator('password'),
-                $mockHashGenerator->getMockController()->hash = 'YOUPALALA',
-                $request = new SymfonyRequest(array(), array_merge($params, array('HASH' => 'YOUPALALA')))
+                $mockHashGenerator->getMockController()->hash = 'YOUPALALA'
             )
             ->when(
-                $be2BillRequest = TestedRequest::createFromRequest($request, $mockHashGenerator)
+                $be2BillRequest = TestedRequest::create(
+                    '1000',
+                    'transactionId',
+                    'orderId',
+                    'message',
+                    'YOUPALALA',
+                    array_merge($params, array('HASH' => 'YOUPALALA')),
+                    $mockHashGenerator
+                )
             )
             ->then
                 ->object($be2BillRequest)
@@ -60,11 +67,18 @@ class Be2BillRequest extends atoum\test
                     '3DSECURE' => 'YES',
                 ),
                 $mockHashGenerator = new \mock\Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator('password'),
-                $mockHashGenerator->getMockController()->hash = 'YOUPALALA',
-                $request = new SymfonyRequest(array(), array_merge($params, array('HASH' => 'PERDU')))
+                $mockHashGenerator->getMockController()->hash = 'YOUPALALA'
             )
-                ->exception(function () use ($request, $mockHashGenerator) {
-                    TestedRequest::createFromRequest($request, $mockHashGenerator);
+                ->exception(function () use ($mockHashGenerator, $params) {
+                    TestedRequest::create(
+                        '1000',
+                        'transactionId',
+                        'orderId',
+                        'message',
+                        'PERDU',
+                        array_merge($params, array('HASH' => 'PERDU')),
+                        $mockHashGenerator
+                    );
                 })
                     ->isInstanceOf('Rezzza\PaymentBe2billBundle\Callback\InvalidBe2BillRequestException')
         ;
