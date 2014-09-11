@@ -3,16 +3,16 @@
 namespace Rezzza\PaymentBe2billBundle\Callback\Controller;
 
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
-use Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest;
+use Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Doctrine\ORM\EntityManager;
 
 /**
- * Handles a 3DS callback and persist the result with an EntityManager.
+ * Handles a callback and persist the result with an EntityManager.
  *
  * @author Florian Voutzinos <florian@voutzinos.com>
  */
-class EntityCallback3dsController extends AbstractCallback3dsController
+class EntityCallbackController extends AbstractCallbackController
 {
     private $entityManager;
     private $transactionClass;
@@ -32,7 +32,7 @@ class EntityCallback3dsController extends AbstractCallback3dsController
     /**
      * {@inheritdoc}
      */
-    public function approveAndDeposit(Callback3dsRequest $request)
+    public function approveAndDeposit(Be2BillRequest $request)
     {
         $transaction = $this->entityManager->getRepository($this->transactionClass)
             ->findOneBy(array('trackingId' => $request->getTransactionId()));

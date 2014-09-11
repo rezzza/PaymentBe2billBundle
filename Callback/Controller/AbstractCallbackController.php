@@ -3,26 +3,26 @@
 namespace Rezzza\PaymentBe2billBundle\Callback\Controller;
 
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
-use Rezzza\PaymentBe2billBundle\Callback\Callback3dsRequest;
+use Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest;
 use JMS\Payment\CoreBundle\Model\PaymentInterface;
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
 
 /**
- * Base class for 3DS callback controllers.
+ * Base class for callback controllers.
  *
  * @author Florian Voutzinos <florian@voutzinos.com>
  */
-abstract class AbstractCallback3dsController implements Callback3dsControllerInterface
+abstract class AbstractCallbackController implements CallbackControllerInterface
 {
     /**
-     * Performs the approval and deposit of a 3DS callback request.
+     * Performs the approval and deposit of a callback request.
      *
      * @param Callback3dsRequest            $request
      * @param FinancialTransactionInterface $transaction
      *
      * @throws \RuntimeException
      */
-    protected function doApproveAndDeposit(Callback3dsRequest $request, FinancialTransactionInterface $transaction)
+    protected function doApproveAndDeposit(Be2BillRequest $request, FinancialTransactionInterface $transaction)
     {
         if (FinancialTransactionInterface::STATE_PENDING !== $transaction->getState()) {
             throw new \RuntimeException('The financial transaction must be pending.');
@@ -41,7 +41,7 @@ abstract class AbstractCallback3dsController implements Callback3dsControllerInt
      * @param FinancialTransactionInterface $transaction
      * @param Callback3dsRequest            $request
      */
-    private function fail(FinancialTransactionInterface $transaction, Callback3dsRequest $request)
+    private function fail(FinancialTransactionInterface $transaction, Be2BillRequest $request)
     {
         $payment = $transaction->getPayment();
         $instruction = $payment->getPaymentInstruction();
@@ -54,7 +54,7 @@ abstract class AbstractCallback3dsController implements Callback3dsControllerInt
         $instruction->setDepositingAmount(0.0);
 
         $transaction->setState(FinancialTransactionInterface::STATE_FAILED);
-        $transaction->setResponseCode($request->getExecCode());
+        $transaction->setResponseCode((string) $request->getExecCode());
         $transaction->setReasonCode($request->getMessage());
     }
 

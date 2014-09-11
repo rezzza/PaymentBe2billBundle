@@ -2,51 +2,48 @@
 
 namespace Rezzza\PaymentBe2billBundle\Callback;
 
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
-/**
- * Represents a Be2bill 3DS callback request.
- *
- * @author Florian Voutzinos <florian@voutzinos.com>
- */
-class Callback3dsRequest
+class Be2BillRequest
 {
     private $execCode;
+
     private $transactionId;
+
     private $orderId;
+
     private $message;
 
-    /**
-     * Creates a new request.
-     *
-     * @param string $execCode
-     * @param string $transactionId
-     * @param string $orderId
-     * @param string $message
-     */
-    public function __construct($execCode, $transactionId, $orderId, $message)
+    private $hash;
+
+    private $params;
+
+    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message, $hash, ParameterBag $params)
     {
         $this->execCode = $execCode;
         $this->transactionId = $transactionId;
         $this->orderId = $orderId;
         $this->message = $message;
+        $this->hash = $hash;
+        $this->params = $params;
     }
 
-    /**
-     * Creates a callback request from an HTTP request.
-     *
-     * @param Request $request
-     *
-     * @return Callback3dsRequest
-     */
     public static function createFromRequest(Request $request)
     {
         return new self(
-            $request->query->get('EXECCODE'),
+            new Be2BillExecCode($request->query->get('EXECCODE')),
             $request->query->get('TRANSACTIONID'),
             $request->query->get('ORDERID'),
-            $request->query->get('MESSAGE')
+            $request->query->get('MESSAGE'),
+            $request->query->get('HASH'),
+            $request->request
         );
+    }
+
+    private function validSignature($hashGenerator)
+    {
+
     }
 
     /**
@@ -56,7 +53,7 @@ class Callback3dsRequest
      */
     public function isSuccess()
     {
-        return '0000' === $this->execCode;
+        return '0000' === $this->execCode->isSuccess();
     }
 
     /**
