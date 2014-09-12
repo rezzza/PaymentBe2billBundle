@@ -6,7 +6,7 @@ use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
 use JMS\Payment\CoreBundle\Model\PaymentInterface;
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
 use mageekguy\atoum;
-use Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallbackController as TestedController;
+use Rezzza\PaymentBe2billBundle\Callback\Controller\TransactionControllerOnBe2BillRequest as TestedController;
 
 /**
  * This file is part of the RezzzaPaymentBe2billBundle package.
@@ -17,17 +17,16 @@ use Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallbackController as 
  */
 
 /**
- * EntityCallbackController.
+ * TransactionControllerOnBe2BillRequest.
  *
  * @uses atoum\test
  * @author Florian Voutzinos <florian@voutzinos.com>
  */
-class EntityCallbackController extends atoum\test
+class TransactionControllerOnBe2BillRequest extends atoum\test
 {
     public function testHandleSuccess()
     {
         $processedAmount = 1337;
-        $transactionClass = 'JMS\Payment\CoreBundle\Entity\FinancialTransaction';
         $transactionId = '1234567';
 
         // Request
@@ -50,31 +49,14 @@ class EntityCallbackController extends atoum\test
         $transaction->getMockController()->getProcessedAmount = $processedAmount;
 
         // Repository
-        $this->mockGenerator->orphanize('__construct');
-        $repository = new \mock\Doctrine\ORM\EntityRepository();
-        $repository->getMockController()->findOneBy = $transaction;
-
-        // Connection
-        $this->mockGenerator->orphanize('__construct');
-        $connection = new \mock\Doctrine\DBAL\Connection();
-        $connection->getMockController()->beginTransaction = function () {};
-        $connection->getMockController()->commit = function () {};
-
-        // Entity manager
-        $this->mockGenerator->orphanize('__construct');
-        $entityManager = new \mock\Doctrine\ORM\EntityManager();
-        $entityManager->getMockController()->getRepository = $repository;
-        $entityManager->getMockController()->getConnection = $connection;
+        $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+        $repository->getMockController()->findOneByTrackingId = $transaction;
 
         $this
             ->if(
-                $handler = new TestedController($entityManager, $transactionClass),
+                $handler = new TestedController($repository),
                 $handler->approveAndDeposit($request)
             )
-            ->mock($repository)
-                ->call('findOneBy')
-                    ->once()
-                    ->withIdenticalArguments(array('trackingId' => $transactionId))
             ->mock($payment)
                 ->call('setState')
                     ->once()
@@ -114,27 +96,15 @@ class EntityCallbackController extends atoum\test
                 ->call('setReasonCode')
                     ->once()
                     ->withIdenticalArguments(PluginInterface::REASON_CODE_SUCCESS)
-            ->mock($connection)
-                ->call('beginTransaction')
-                    ->once()
-                ->call('commit')
-                    ->once()
-            ->mock($entityManager)
-                ->call('persist')
-                    ->withIdenticalArguments($payment)
-                    ->once()
-                    ->withIdenticalArguments($instruction)
-                    ->once()
+            ->mock($repository)
+                ->call('save')
                     ->withIdenticalArguments($transaction)
-                    ->once()
-                ->call('flush')
                     ->once()
         ;
     }
 
     public function testHandleFailure()
     {
-        $transactionClass = 'JMS\Payment\CoreBundle\Entity\FinancialTransaction';
         $transactionId = '1234567';
         $execCode = '0048';
         $message = 'hello';
@@ -160,31 +130,14 @@ class EntityCallbackController extends atoum\test
         $transaction->getMockController()->getPayment = $payment;
 
         // Repository
-        $this->mockGenerator->orphanize('__construct');
-        $repository = new \mock\Doctrine\ORM\EntityRepository();
-        $repository->getMockController()->findOneBy = $transaction;
-
-        // Connection
-        $this->mockGenerator->orphanize('__construct');
-        $connection = new \mock\Doctrine\DBAL\Connection();
-        $connection->getMockController()->beginTransaction = function () {};
-        $connection->getMockController()->commit = function () {};
-
-        // Entity manager
-        $this->mockGenerator->orphanize('__construct');
-        $entityManager = new \mock\Doctrine\ORM\EntityManager();
-        $entityManager->getMockController()->getRepository = $repository;
-        $entityManager->getMockController()->getConnection = $connection;
+        $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+        $repository->getMockController()->findOneByTrackingId = $transaction;
 
         $this
             ->if(
-                $handler = new TestedController($entityManager, $transactionClass),
+                $handler = new TestedController($repository),
                 $handler->approveAndDeposit($request)
             )
-            ->mock($repository)
-                ->call('findOneBy')
-                    ->once()
-                    ->withIdenticalArguments(array('trackingId' => $transactionId))
             ->mock($payment)
                 ->call('setState')
                     ->once()
@@ -212,20 +165,9 @@ class EntityCallbackController extends atoum\test
                 ->call('setReasonCode')
                     ->once()
                     ->withIdenticalArguments($message)
-            ->mock($connection)
-                ->call('beginTransaction')
-                    ->once()
-                ->call('commit')
-                    ->once()
-            ->mock($entityManager)
-                ->call('persist')
-                    ->withIdenticalArguments($payment)
-                    ->once()
-                    ->withIdenticalArguments($instruction)
-                    ->once()
+            ->mock($repository)
+                ->call('save')
                     ->withIdenticalArguments($transaction)
-                    ->once()
-                ->call('flush')
                     ->once()
         ;
     }
@@ -241,17 +183,11 @@ class EntityCallbackController extends atoum\test
         $transaction->getMockController()->getState = FinancialTransactionInterface::STATE_SUCCESS;
 
         // Repository
-        $this->mockGenerator->orphanize('__construct');
-        $repository = new \mock\Doctrine\ORM\EntityRepository();
-        $repository->getMockController()->findOneBy = $transaction;
-
-        // Entity manager
-        $this->mockGenerator->orphanize('__construct');
-        $entityManager = new \mock\Doctrine\ORM\EntityManager();
-        $entityManager->getMockController()->getRepository = $repository;
+        $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+        $repository->getMockController()->findOneByTrackingId = $transaction;
 
         $this
-            ->if($handler = new TestedController($entityManager, ''))
+            ->if($handler = new TestedController($repository))
             ->exception(function () use ($handler, $request) {
                 $handler->approveAndDeposit($request);
             })
@@ -265,17 +201,11 @@ class EntityCallbackController extends atoum\test
         $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
 
         // Repository
-        $this->mockGenerator->orphanize('__construct');
-        $repository = new \mock\Doctrine\ORM\EntityRepository();
-        $repository->getMockController()->findOneBy = null;
-
-        // Entity manager
-        $this->mockGenerator->orphanize('__construct');
-        $entityManager = new \mock\Doctrine\ORM\EntityManager();
-        $entityManager->getMockController()->getRepository = $repository;
+        $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+        $repository->getMockController()->findOneByTrackingId = null;
 
         $this
-            ->if($handler = new TestedController($entityManager, ''))
+            ->if($handler = new TestedController($repository))
             ->exception(function () use ($handler, $request) {
                 $handler->approveAndDeposit($request);
             })

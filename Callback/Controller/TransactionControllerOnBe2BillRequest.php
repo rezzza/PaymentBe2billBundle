@@ -3,17 +3,28 @@
 namespace Rezzza\PaymentBe2billBundle\Callback\Controller;
 
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
-use Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest;
 use JMS\Payment\CoreBundle\Model\PaymentInterface;
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
 
+use Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest;
+use Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+use Rezzza\PaymentBe2billBundle\Exception\NotFoundTransactionException;
+
 /**
- * Base class for callback controllers.
+ * Class for callback controllers.
  *
  * @author Florian Voutzinos <florian@voutzinos.com>
+ * @author Timothée Barray <tim@amicalement-web.net>
  */
-abstract class AbstractCallbackController implements CallbackControllerInterface
+class TransactionControllerOnBe2BillRequest
 {
+    private $transactionRepository;
+
+    public function __construct(TransactionRepository $transactionRepository)
+    {
+        $this->transactionRepository = $transactionRepository;
+    }
+
     /**
      * Performs the approval and deposit of a callback request.
      *
@@ -22,8 +33,16 @@ abstract class AbstractCallbackController implements CallbackControllerInterface
      *
      * @throws \RuntimeException
      */
-    protected function doApproveAndDeposit(Be2BillRequest $request, FinancialTransactionInterface $transaction)
+    public function approveAndDeposit(Be2BillRequest $request)
     {
+        $transaction = $this->transactionRepository->findOneByTrackingId($request->getTransactionId());
+
+        if (null === $transaction) {
+            throw new NotFoundTransactionException(
+                sprintf('No transaction found with tracking "%s"', $request->getTransactionId())
+            );
+        }
+
         if (FinancialTransactionInterface::STATE_PENDING !== $transaction->getState()) {
             throw new \RuntimeException('The financial transaction must be pending.');
         }
@@ -56,6 +75,8 @@ abstract class AbstractCallbackController implements CallbackControllerInterface
         $transaction->setState(FinancialTransactionInterface::STATE_FAILED);
         $transaction->setResponseCode((string) $request->getExecCode());
         $transaction->setReasonCode($request->getMessage());
+
+        $this->transactionRepository->save($transaction);
     }
 
     /**
@@ -83,5 +104,7 @@ abstract class AbstractCallbackController implements CallbackControllerInterface
         $transaction->setState(FinancialTransactionInterface::STATE_SUCCESS);
         $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_SUCCESS);
         $transaction->setReasonCode(PluginInterface::REASON_CODE_SUCCESS);
+
+        $this->transactionRepository->save($transaction);
     }
 }
