@@ -22,6 +22,11 @@
             <argument>%payment.be2bill.password%</argument>
         </service>
 
-        <service id="payment.be2bill.http_client" class="Guzzle\Http\Client" />
+        <service id="payment.be2bill.http_client" class="Guzzle\Http\Client">
+            <argument></argument>
+            <argument type="collection">
+                <argument key="ssl.certificate_authority">%payment.be2bill.cert%</argument>
+            </argument>
+        </service>
     </services>
 </container>
