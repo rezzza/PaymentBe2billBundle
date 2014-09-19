@@ -6,15 +6,27 @@
 
     <parameters>
         <parameter key="payment.be2bill.client.class">Rezzza\PaymentBe2billBundle\Client\Client</parameter>
+        <parameter key="payment.be2bill.hash_generator.class">Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator</parameter>
     </parameters>
 
     <services>
         <service id="payment.be2bill.client" class="%payment.be2bill.client.class%">
+            <argument type="service" id="payment.be2bill.http_client" />
             <argument>%payment.be2bill.identifier%</argument>
-            <argument>%payment.be2bill.password%</argument>
+            <argument type="service" id="payment.be2bill.hash_generator" />
             <argument>%payment.be2bill.debug%</argument>
             <argument>%payment.be2bill.default_3ds_display_mode%</argument>
         </service>
 
+        <service id="payment.be2bill.hash_generator" class="%payment.be2bill.hash_generator.class%">
+            <argument>%payment.be2bill.password%</argument>
+        </service>
+
+        <service id="payment.be2bill.http_client" class="Guzzle\Http\Client">
+            <argument></argument>
+            <argument type="collection">
+                <argument key="ssl.certificate_authority">%payment.be2bill.cert%</argument>
+            </argument>
+        </service>
     </services>
 </container>

@@ -86,17 +86,15 @@ class RezzzaPaymentBe2billExtension extends atoum\test
                     array('identifier' => 'test', 'password' => 'test')
                 ),
                 $extension->load($config, $container),
-                $definition = $container->getDefinition('payment.be2bill.callback.3ds_controller'),
-                $class = $container->getParameter('payment.be2bill.callback.3ds_controller.class')
+                $definition = $container->getDefinition('payment.be2bill.transaction_controller.callback'),
+                $class = $container->getParameter('payment.be2bill.transaction_controller.callback.class')
             )
             ->string($class)
-                ->isEqualTo('Rezzza\PaymentBe2billBundle\Callback\Controller\EntityCallback3dsController')
+                ->isEqualTo('Rezzza\PaymentBe2billBundle\Callback\Controller\TransactionControllerOnBe2BillRequest')
             ->string($definition->getClass())
-                ->isEqualTo('%payment.be2bill.callback.3ds_controller.class%')
+                ->isEqualTo('%payment.be2bill.transaction_controller.callback.class%')
             ->object($definition->getArgument(0))
-                ->isEqualTo(new Reference('doctrine.orm.entity_manager'))
-            ->string($definition->getArgument(1))
-                ->isEqualTo('%payment.plugin_controller.entity.options.financial_transaction_class%')
+                ->isEqualTo(new Reference('payment.transaction.repository.doctrine_orm'))
         ;
     }
 }

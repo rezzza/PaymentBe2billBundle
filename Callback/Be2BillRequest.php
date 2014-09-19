@@ -2,29 +2,20 @@
 
 namespace Rezzza\PaymentBe2billBundle\Callback;
 
-use Symfony\Component\HttpFoundation\Request;
+use Rezzza\PaymentBe2billBundle\Client\Be2BillExecCode;
+use Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator;
 
-/**
- * Represents a Be2bill 3DS callback request.
- *
- * @author Florian Voutzinos <florian@voutzinos.com>
- */
-class Callback3dsRequest
+class Be2BillRequest
 {
     private $execCode;
+
     private $transactionId;
+
     private $orderId;
+
     private $message;
 
-    /**
-     * Creates a new request.
-     *
-     * @param string $execCode
-     * @param string $transactionId
-     * @param string $orderId
-     * @param string $message
-     */
-    public function __construct($execCode, $transactionId, $orderId, $message)
+    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message)
     {
         $this->execCode = $execCode;
         $this->transactionId = $transactionId;
@@ -32,20 +23,19 @@ class Callback3dsRequest
         $this->message = $message;
     }
 
-    /**
-     * Creates a callback request from an HTTP request.
-     *
-     * @param Request $request
-     *
-     * @return Callback3dsRequest
-     */
-    public static function createFromRequest(Request $request)
+    public static function create($execCode, $transactionId, $orderId, $message, $hash, array $params, ParametersHashGenerator $hashGenerator)
     {
+        unset($params['HASH']);
+
+        if ($hashGenerator->hash($params) !== $hash) {
+            throw new InvalidBe2BillRequestException;
+        }
+
         return new self(
-            $request->query->get('EXECCODE'),
-            $request->query->get('TRANSACTIONID'),
-            $request->query->get('ORDERID'),
-            $request->query->get('MESSAGE')
+            new Be2BillExecCode($execCode),
+            $transactionId,
+            $orderId,
+            $message
         );
     }
 
@@ -56,7 +46,7 @@ class Callback3dsRequest
      */
     public function isSuccess()
     {
-        return '0000' === $this->execCode;
+        return $this->execCode->isSuccess();
     }
 
     /**

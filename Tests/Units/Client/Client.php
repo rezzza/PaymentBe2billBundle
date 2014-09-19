@@ -21,159 +21,283 @@ use Rezzza\PaymentBe2billBundle\Client\Client as TestedClient;
  */
 class Client extends atoum\test
 {
-    public function testConstruct()
+    private $hashGenerator;
+
+    private $httpClient;
+
+    public function beforeTestMethod($method)
+    {
+        $this->hashGenerator = new \mock\Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator('CuirMoustache');
+        $this->httpClient = new \mock\Guzzle\Http\Client;
+    }
+
+    public function test_it_use_production_endpoints()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->boolean($client->getDebug())
-                    ->isFalse()
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', true, 'main'))
-                ->boolean($client->getDebug())
-                    ->isTrue()
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->boolean($client->getDebug())
-                    ->isFalse()
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(
+                    new \Guzzle\Http\Message\Response(200),
+                    new \Guzzle\Http\Message\Response(200)
+                ))
+            )
+            ->when(
+                $client->setDebug(false),
+                $response = $client->requestRefund(array())
+            )
+             ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-magenta1.be2bill.com/front/service/rest/process.php',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testSetDebug()
+    public function test_it_use_second_production_endpoint()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->boolean($client->getDebug())
-                    ->isFalse()
-            ->if($client->setDebug(true))
-                ->boolean($client->getDebug())
-                    ->isTrue()
-            ->if($client->setDebug(false))
-                ->boolean($client->getDebug())
-                    ->isFalse()
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(
+                    new \Guzzle\Http\Message\Response(500),
+                    new \Guzzle\Http\Message\Response(200)
+                ))
+            )
+            ->when(
+                $client->setDebug(false),
+                $response = $client->requestRefund(array())
+            )
+             ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-magenta1.be2bill.com/front/service/rest/process.php',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
+
+                    ->withArguments(
+                        'https://secure-magenta2.be2bill.com/front/service/rest/process.php',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testGetApiEndpoints()
+    public function test_it_throw_exception_while_no_valid_response()
     {
-        $apiEndPoints = array(
-            'sandbox' => array(
-                'https://secure-test.be2bill.com/front/service/rest/process',
-            ),
-            'production' => array(
-                'https://secure-magenta1.be2bill.com/front/service/rest/process.php',
-                'https://secure-magenta2.be2bill.com/front/service/rest/process.php',
-            ),
-        );
-
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->array($client->getApiEndpoints(false))
-                    ->isIdenticalTo($apiEndPoints['production'])
-            ->if($client->setDebug(true))
-                ->array($client->getApiEndpoints(true))
-                    ->isIdenticalTo($apiEndPoints['sandbox'])
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(
+                    new \Guzzle\Http\Message\Response(500),
+                    new \Guzzle\Http\Message\Response(403)
+                ))
+            )
+            ->exception(
+                function () use ($client) {
+                    $client->setDebug(false);
+                    $response = $client->requestRefund(array());
+                }
+            )
+                ->isInstanceOf('JMS\Payment\CoreBundle\Plugin\Exception\CommunicationException')
+
+            ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-magenta1.be2bill.com/front/service/rest/process.php',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
+
+                    ->withArguments(
+                        'https://secure-magenta2.be2bill.com/front/service/rest/process.php',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testSortParameters()
+    public function test_it_should_strip_3ds_parameters()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-            ->and($parameters = array(
-                'CLIENTIDENT'      => '404',
-                'CLIENTREFERRER'   => 'example.org',
-                'CLIENTUSERAGENT'  => 'Mozilla/5.0 (Windows CE) AppleWebKit/5350 (KHTML, like Gecko) Chrome/13.0.888.0 Safari/5350',
-                'CLIENTIP'         => '127.0.0.1',
-                'DESCRIPTION'      => 'Winter is coming',
-                'ORDERID'          => '13003',
-                'AMOUNT'           => '23.99',
-                'VERSION'          => '2.0',
-                'CARDFULLNAME'     => 'CHUCK NORRIS',
-                'CLIENTEMAIL'      => 'chucknorris@example.org',
-                'CARDCODE'         => '1111111111111111',
-                'CARDCVV'          => '123',
-                'CARDVALIDITYDATE' => '07-20',
-                'CREATEALIAS'      => 'no',
-            ))
-                ->array($client->sortParameters($parameters))
-                    ->isIdenticalTo(array(
-                'AMOUNT'           => '23.99',
-                'CARDCODE'         => '1111111111111111',
-                'CARDCVV'          => '123',
-                'CARDFULLNAME'     => 'CHUCK NORRIS',
-                'CARDVALIDITYDATE' => '07-20',
-                'CLIENTEMAIL'      => 'chucknorris@example.org',
-                'CLIENTIDENT'      => '404',
-                'CLIENTIP'         => '127.0.0.1',
-                'CLIENTREFERRER'   => 'example.org',
-                'CLIENTUSERAGENT'  => 'Mozilla/5.0 (Windows CE) AppleWebKit/5350 (KHTML, like Gecko) Chrome/13.0.888.0 Safari/5350',
-                'CREATEALIAS'      => 'no',
-                'DESCRIPTION'      => 'Winter is coming',
-                'ORDERID'          => '13003',
-                'VERSION'          => '2.0',
-            ))
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+            )
+            ->when(
+                $response = $client->requestRefund(array(
+                    '3DSECURE' => 'yes',
+                    '3DSECUREDISPLAYMODE' => 'main'
+                ))
+            )
+            ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-test.be2bill.com/front/service/rest/process',
+                        null,
+                        array(
+                            'method' => 'refund',
+                            'params' => array(
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'refund',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testConvertAmountToBe2billFormat()
+    public function test_it_should_keep_3ds_parameters()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->integer($amount = $client->convertAmountToBe2billFormat('23.99'))
-                    ->isIdenticalTo(2399)
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-                ->integer($client->convertAmountToBe2billFormat('23'))
-                    ->isIdenticalTo(2300)
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+            )
+            ->when(
+                $response = $client->requestPayment(array(
+                    '3DSECURE' => 'yes',
+                    '3DSECUREDISPLAYMODE' => 'main'
+                ))
+            )
+            ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-test.be2bill.com/front/service/rest/process',
+                        null,
+                        array(
+                            'method' => 'payment',
+                            'params' => array(
+                                '3DSECURE' => 'yes',
+                                '3DSECUREDISPLAYMODE' => 'main',
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'payment',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testGetSignature()
+    public function test_it_should_add_default_3ds_parameters()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-            ->and($parameters = array(
-                'CLIENTREFERRER'=> 'example.org',
-                'CLIENTIDENT'   => '404',
-            ))
-                ->string($client->getSignature('CuirMoustache', $parameters))
-                    ->isIdenticalTo(hash('sha256', 'CuirMoustacheCLIENTIDENT=404CuirMoustacheCLIENTREFERRER=example.orgCuirMoustache'))
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+            )
+            ->when(
+                $response = $client->requestPayment(array(
+                    '3DSECURE' => 'yes',
+                ))
+            )
+            ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-test.be2bill.com/front/service/rest/process',
+                        null,
+                        array(
+                            'method' => 'payment',
+                            'params' => array(
+                                '3DSECURE' => 'yes',
+                                '3DSECUREDISPLAYMODE' => 'main',
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'payment',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testConfigure3dsParametersUnsupportedOperation()
+    public function test_it_should_convert_amount()
     {
         $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-            ->and($parameters = array('3DSECURE' => 'yes', '3DSECUREDISPLAYMODE' => 'main'))
-            ->and($parameters = $client->configureParameters('invalid', $parameters))
-                ->array($params = $parameters['params'])
-                    ->notHasKeys(array('3DSECURE', '3DSECUREDISPLAYMODE'))
+            ->given(
+                $this->hashGenerator->getMockController()->hash = 'HASH',
+                $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+            )
+            ->when(
+                $response = $client->requestPayment(array('AMOUNT' => 1.05))
+            )
+            ->mock($this->httpClient)
+                ->call('post')
+                    ->withArguments(
+                        'https://secure-test.be2bill.com/front/service/rest/process',
+                        null,
+                        array(
+                            'method' => 'payment',
+                            'params' => array(
+                                'AMOUNT' => 105,
+                                'IDENTIFIER' => 'CHUCKNORRIS',
+                                'OPERATIONTYPE' => 'payment',
+                                'HASH' => 'HASH'
+                            )
+                        )
+                    )
+                    ->once()
         ;
     }
 
-    public function testConfigure3dsParameters()
+    private function addGuzzleMockResponses(array $responses)
     {
-        $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-            ->and($parameters = array('3DSECURE' => 'yes', '3DSECUREDISPLAYMODE' => 'top'))
-            ->and($parameters = $client->configureParameters('payment', $parameters))
-            ->and($params = $parameters['params'])
-                ->string($params['3DSECURE'])
-                    ->isEqualTo('yes')
-                ->string($params['3DSECUREDISPLAYMODE'])
-                    ->isEqualTo('top')
-        ;
-    }
+        $plugin = new \Guzzle\Plugin\Mock\MockPlugin();
+        foreach ($responses as $response) {
+            $plugin->addResponse($response);
+        }
 
-    public function testConfigure3dsParametersDefaultMode()
-    {
-        $this
-            ->if($client = new TestedClient('CHUCKNORRIS', 'CuirMoustache', false, 'main'))
-            ->and($parameters = array('3DSECURE' => 'yes'))
-            ->and($parameters = $client->configureParameters('payment', $parameters))
-            ->and($params = $parameters['params'])
-                ->string($params['3DSECURE'])
-                    ->isEqualTo('yes')
-                ->string($params['3DSECUREDISPLAYMODE'])
-                    ->isEqualTo('main')
-        ;
+        $this->httpClient->addSubscriber($plugin);
     }
 }
