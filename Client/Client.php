@@ -95,6 +95,7 @@ class Client
     protected function sendApiRequest(array $parameters)
     {
         $apiEndPoints = $this->getApiEndpoints();
+        $guzzleException = null;
 
         if (empty($apiEndPoints)) {
             throw new CommunicationException('No Api Endpoint configured.');
@@ -105,6 +106,7 @@ class Client
                 $request = $this->httpClient->post($apiEndPoint, null, $parameters);
                 $response = $this->httpClient->send($request);
             } catch (BadResponseException $e) {
+                $guzzleException = $e;
                 $response = $e->getResponse();
             }
 
@@ -119,7 +121,9 @@ class Client
         }
 
         throw new CommunicationException(
-            'The API request was not successful (Status: '.$response->getStatusCode().'): '.$response->getBody(true)
+            'The API request was not successful (Status: '.$response->getStatusCode().'): '.$response->getBody(true),
+            0,
+            $guzzleException
         );
     }
 
