@@ -5,7 +5,9 @@ namespace Rezzza\PaymentBe2billBundle\Callback\Controller;
 use JMS\Payment\CoreBundle\Model\FinancialTransactionInterface;
 use JMS\Payment\CoreBundle\Model\PaymentInterface;
 use JMS\Payment\CoreBundle\Plugin\PluginInterface;
+use JMS\Payment\CoreBundle\Entity\ExtendedData;
 
+use Rezzza\PaymentBe2billBundle\Client\Be2BillExecCode;
 use Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest;
 use Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
 use Rezzza\PaymentBe2billBundle\Exception\NotFoundTransactionException;
@@ -48,9 +50,9 @@ class TransactionControllerOnBe2BillRequest
         }
 
         if ($request->isSuccess()) {
-            $this->deposit($transaction);
+            $this->deposit($transaction, $request->getParam('ALIAS'));
         } else {
-            $this->fail($transaction, $request);
+            $this->fail($transaction, $request->getExecCode(), $request->getMessage());
         }
     }
 
@@ -60,7 +62,7 @@ class TransactionControllerOnBe2BillRequest
      * @param FinancialTransactionInterface $transaction
      * @param Be2BillRequest            $request
      */
-    private function fail(FinancialTransactionInterface $transaction, Be2BillRequest $request)
+    private function fail(FinancialTransactionInterface $transaction, Be2BillExecCode $execCode, $failReason)
     {
         $payment = $transaction->getPayment();
         $instruction = $payment->getPaymentInstruction();
@@ -73,8 +75,8 @@ class TransactionControllerOnBe2BillRequest
         $instruction->setDepositingAmount(0.0);
 
         $transaction->setState(FinancialTransactionInterface::STATE_FAILED);
-        $transaction->setResponseCode((string) $request->getExecCode());
-        $transaction->setReasonCode($request->getMessage());
+        $transaction->setResponseCode((string) $execCode);
+        $transaction->setReasonCode($failReason);
 
         $this->transactionRepository->save($transaction);
     }
@@ -84,7 +86,7 @@ class TransactionControllerOnBe2BillRequest
      *
      * @param FinancialTransactionInterface $transaction
      */
-    private function deposit(FinancialTransactionInterface $transaction)
+    private function deposit(FinancialTransactionInterface $transaction, $walletAlias = null)
     {
         $payment = $transaction->getPayment();
         $instruction = $payment->getPaymentInstruction();
@@ -104,6 +106,12 @@ class TransactionControllerOnBe2BillRequest
         $transaction->setState(FinancialTransactionInterface::STATE_SUCCESS);
         $transaction->setResponseCode(PluginInterface::RESPONSE_CODE_SUCCESS);
         $transaction->setReasonCode(PluginInterface::REASON_CODE_SUCCESS);
+
+        if (null !== $walletAlias) {
+            $extendedData = new ExtendedData;
+            $extendedData->set('ALIAS', $walletAlias);
+            $transaction->setExtendedData($extendedData);
+        }
 
         $this->transactionRepository->save($transaction);
     }

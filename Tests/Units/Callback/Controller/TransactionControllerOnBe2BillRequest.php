@@ -24,6 +24,12 @@ use Rezzza\PaymentBe2billBundle\Callback\Controller\TransactionControllerOnBe2Bi
  */
 class TransactionControllerOnBe2BillRequest extends atoum\test
 {
+    private $instruction;
+
+    private $payment;
+
+    private $transaction;
+
     public function testHandleSuccess()
     {
         $processedAmount = 1337;
@@ -35,29 +41,20 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
         $request->getMockController()->isSuccess = true;
         $request->getMockController()->getTransactionId = $transactionId;
 
-        // Instruction
-        $instruction = new \mock\JMS\Payment\CoreBundle\Model\PaymentInstructionInterface();
-
-        // Payment
-        $payment = new \mock\JMS\Payment\CoreBundle\Model\PaymentInterface();
-        $payment->getMockController()->getPaymentInstruction = $instruction;
-
-        // Financial transaction
-        $transaction = new \mock\JMS\Payment\CoreBundle\Entity\FinancialTransaction();
-        $transaction->getMockController()->getState = FinancialTransactionInterface::STATE_PENDING;
-        $transaction->getMockController()->getPayment = $payment;
-        $transaction->getMockController()->getProcessedAmount = $processedAmount;
+        // Transaction
+        $this->givenAFinancialTransactionWithStatus(FinancialTransactionInterface::STATE_PENDING);
+        $this->transaction->getMockController()->getProcessedAmount = $processedAmount;
 
         // Repository
         $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
-        $repository->getMockController()->findOneByTrackingId = $transaction;
+        $repository->getMockController()->findOneByTrackingId = $this->transaction;
 
         $this
             ->if(
                 $handler = new TestedController($repository),
                 $handler->approveAndDeposit($request)
             )
-            ->mock($payment)
+            ->mock($this->payment)
                 ->call('setState')
                     ->once()
                     ->withIdenticalArguments(PaymentInterface::STATE_DEPOSITED)
@@ -73,7 +70,7 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                 ->call('setDepositedAmount')
                     ->once()
                     ->withIdenticalArguments($processedAmount)
-            ->mock($instruction)
+            ->mock($this->instruction)
                 ->call('setApprovingAmount')
                     ->once()
                     ->withIdenticalArguments(0.0)
@@ -86,7 +83,7 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                 ->call('setDepositedAmount')
                     ->once()
                     ->withIdenticalArguments($processedAmount)
-            ->mock($transaction)
+            ->mock($this->transaction)
                 ->call('setState')
                     ->once()
                     ->withIdenticalArguments(FinancialTransactionInterface::STATE_SUCCESS)
@@ -98,15 +95,46 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                     ->withIdenticalArguments(PluginInterface::REASON_CODE_SUCCESS)
             ->mock($repository)
                 ->call('save')
-                    ->withIdenticalArguments($transaction)
+                    ->withIdenticalArguments($this->transaction)
                     ->once()
+        ;
+    }
+
+    public function test_it_should_save_wallet_alias_if_provided()
+    {
+        $processedAmount = 1337;
+        $transactionId = '1234567';
+
+        // Request
+        $this->mockGenerator->orphanize('__construct');
+        $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
+        $request->getMockController()->isSuccess = true;
+        $request->getMockController()->getTransactionId = $transactionId;
+        $request->getMockController()->getParam = '4LI4S';
+
+        // Transaction
+        $this->givenAFinancialTransactionWithStatus(FinancialTransactionInterface::STATE_PENDING);
+        $this->transaction->getMockController()->getProcessedAmount = $processedAmount;
+
+        // Repository
+        $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
+        $repository->getMockController()->findOneByTrackingId = $this->transaction;
+
+         $this
+            ->when(
+                $handler = new TestedController($repository),
+                $handler->approveAndDeposit($request)
+            )
+            ->then
+                ->variable($this->transaction->getExtendedData()->get('ALIAS'))
+                    ->isEqualTo('4LI4S')
         ;
     }
 
     public function testHandleFailure()
     {
         $transactionId = '1234567';
-        $execCode = '0048';
+        $execCode = new \Rezzza\PaymentBe2billBundle\Client\Be2BillExecCode('0048');
         $message = 'hello';
 
         // Request
@@ -117,28 +145,19 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
         $request->getMockController()->getExecCode = $execCode;
         $request->getMockController()->getMessage = $message;
 
-        // Instruction
-        $instruction = new \mock\JMS\Payment\CoreBundle\Model\PaymentInstructionInterface();
-
-        // Payment
-        $payment = new \mock\JMS\Payment\CoreBundle\Model\PaymentInterface();
-        $payment->getMockController()->getPaymentInstruction = $instruction;
-
-        // Financial transaction
-        $transaction = new \mock\JMS\Payment\CoreBundle\Entity\FinancialTransaction();
-        $transaction->getMockController()->getState = FinancialTransactionInterface::STATE_PENDING;
-        $transaction->getMockController()->getPayment = $payment;
+        // Transaction
+        $this->givenAFinancialTransactionWithStatus(FinancialTransactionInterface::STATE_PENDING);
 
         // Repository
         $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
-        $repository->getMockController()->findOneByTrackingId = $transaction;
+        $repository->getMockController()->findOneByTrackingId = $this->transaction;
 
         $this
             ->if(
                 $handler = new TestedController($repository),
                 $handler->approveAndDeposit($request)
             )
-            ->mock($payment)
+            ->mock($this->payment)
                 ->call('setState')
                     ->once()
                     ->withIdenticalArguments(PaymentInterface::STATE_FAILED)
@@ -148,14 +167,14 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                 ->call('setDepositingAmount')
                     ->once()
                     ->withIdenticalArguments(0.0)
-            ->mock($instruction)
+            ->mock($this->instruction)
                 ->call('setApprovingAmount')
                     ->once()
                     ->withIdenticalArguments(0.0)
                 ->call('setDepositingAmount')
                     ->once()
                     ->withIdenticalArguments(0.0)
-            ->mock($transaction)
+            ->mock($this->transaction)
                 ->call('setState')
                     ->once()
                     ->withIdenticalArguments(FinancialTransactionInterface::STATE_FAILED)
@@ -167,7 +186,7 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                     ->withIdenticalArguments($message)
             ->mock($repository)
                 ->call('save')
-                    ->withIdenticalArguments($transaction)
+                    ->withIdenticalArguments($this->transaction)
                     ->once()
         ;
     }
@@ -179,12 +198,11 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
         $request = new \mock\Rezzza\PaymentBe2billBundle\Callback\Be2BillRequest();
 
         // Financial transaction
-        $transaction = new \mock\JMS\Payment\CoreBundle\Entity\FinancialTransaction();
-        $transaction->getMockController()->getState = FinancialTransactionInterface::STATE_SUCCESS;
+        $this->givenAFinancialTransactionWithStatus(FinancialTransactionInterface::STATE_SUCCESS);
 
         // Repository
         $repository = new \mock\Rezzza\PaymentBe2billBundle\Repository\TransactionRepository;
-        $repository->getMockController()->findOneByTrackingId = $transaction;
+        $repository->getMockController()->findOneByTrackingId = $this->transaction;
 
         $this
             ->if($handler = new TestedController($repository))
@@ -210,5 +228,20 @@ class TransactionControllerOnBe2BillRequest extends atoum\test
                 $handler->approveAndDeposit($request);
             })
         ;
+    }
+
+    private function givenAFinancialTransactionWithStatus($status)
+    {
+        // Instruction
+        $this->instruction = new \mock\JMS\Payment\CoreBundle\Model\PaymentInstructionInterface();
+
+        // Payment
+        $this->payment = new \mock\JMS\Payment\CoreBundle\Model\PaymentInterface();
+        $this->payment->getMockController()->getPaymentInstruction = $this->instruction;
+
+        // Financial transaction
+        $this->transaction = new \mock\JMS\Payment\CoreBundle\Entity\FinancialTransaction();
+        $this->transaction->getMockController()->getState = $status;//FinancialTransactionInterface::STATE_PENDING;
+        $this->transaction->getMockController()->getPayment = $this->payment;
     }
 }

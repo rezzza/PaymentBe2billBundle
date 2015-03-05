@@ -15,12 +15,15 @@ class Be2BillRequest
 
     private $message;
 
-    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message)
+    private $params = array();
+
+    public function __construct(Be2BillExecCode $execCode, $transactionId, $orderId, $message, array $params = array())
     {
         $this->execCode = $execCode;
         $this->transactionId = $transactionId;
         $this->orderId = $orderId;
         $this->message = $message;
+        $this->params = $params;
     }
 
     public static function create($execCode, $transactionId, $orderId, $message, $hash, array $params, ParametersHashGenerator $hashGenerator)
@@ -35,7 +38,8 @@ class Be2BillRequest
             new Be2BillExecCode($execCode),
             $transactionId,
             $orderId,
-            $message
+            $message,
+            $params
         );
     }
 
@@ -52,7 +56,7 @@ class Be2BillRequest
     /**
      * Gets the exec code.
      *
-     * @return string
+     * @return Be2BillExecCode
      */
     public function getExecCode()
     {
@@ -87,5 +91,12 @@ class Be2BillRequest
     public function getMessage()
     {
         return $this->message;
+    }
+
+    public function getParam($key)
+    {
+        if (array_key_exists($key, $this->params)) {
+            return $this->params[$key];
+        }
     }
 }
