@@ -270,7 +270,7 @@ class Client extends atoum\test
                 $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
             )
             ->when(
-                $response = $client->requestPayment(array('AMOUNT' => 1.05))
+                $response = $client->requestPayment(array('AMOUNT' => 8.20))
             )
             ->mock($this->httpClient)
                 ->call('post')
@@ -280,7 +280,7 @@ class Client extends atoum\test
                         array(
                             'method' => 'payment',
                             'params' => array(
-                                'AMOUNT' => 105,
+                                'AMOUNT' => 820,
                                 'IDENTIFIER' => 'CHUCKNORRIS',
                                 'OPERATIONTYPE' => 'payment',
                                 'HASH' => 'HASH'

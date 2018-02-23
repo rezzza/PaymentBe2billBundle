@@ -171,6 +171,6 @@ class Client
 
     private function convertAmountToBe2billFormat($amount)
     {
-        return intval($amount * 100);
+        return round($amount * 100, 0, PHP_ROUND_HALF_DOWN);
     }
 }
