@@ -261,8 +261,14 @@ class Client extends atoum\test
         ;
     }
 
-    public function test_it_should_convert_amount()
+    /**
+     * @dataProvider amountsDataProvider
+     */
+    public function test_it_should_convert_amount($amount, $convertedAmount)
     {
+        $this->hashGenerator = new \mock\Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator('CuirMoustache');
+        $this->httpClient = new \mock\Guzzle\Http\Client;
+        
         $this
             ->given(
                 $this->hashGenerator->getMockController()->hash = 'HASH',
@@ -270,7 +276,7 @@ class Client extends atoum\test
                 $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
             )
             ->when(
-                $response = $client->requestPayment(array('AMOUNT' => 8.20))
+                $response = $client->requestPayment(array('AMOUNT' => $amount))
             )
             ->mock($this->httpClient)
                 ->call('post')
@@ -280,7 +286,7 @@ class Client extends atoum\test
                         array(
                             'method' => 'payment',
                             'params' => array(
-                                'AMOUNT' => 820,
+                                'AMOUNT' => $convertedAmount,
                                 'IDENTIFIER' => 'CHUCKNORRIS',
                                 'OPERATIONTYPE' => 'payment',
                                 'HASH' => 'HASH'
@@ -289,6 +295,15 @@ class Client extends atoum\test
                     )
                     ->once()
         ;
+    }
+
+    protected function amountsDataProvider()
+    {
+        return [
+            [1.05, 105],
+            [8.20, 820],
+            [42.63, 4263],
+        ];
     }
 
     private function addGuzzleMockResponses(array $responses)
