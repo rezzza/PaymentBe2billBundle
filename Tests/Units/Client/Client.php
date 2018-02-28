@@ -299,11 +299,11 @@ class Client extends atoum\test
 
     protected function amountsDataProvider()
     {
-        return [
-            [1.05, 105],
-            [8.20, 820],
-            [42.63, 4263],
-        ];
+        return array(
+            array(1.05, 105),
+            array(8.20, 820),
+            array(42.63, 4263),
+        );
     }
 
     private function addGuzzleMockResponses(array $responses)
