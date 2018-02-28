@@ -38,8 +38,8 @@ class Client extends atoum\test
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
                 $this->addGuzzleMockResponses(array(
-                    new \Guzzle\Http\Message\Response(200),
-                    new \Guzzle\Http\Message\Response(200)
+                    new \Guzzle\Http\Message\Response(200, null, '{}'),
+                    new \Guzzle\Http\Message\Response(200, null, '{}')
                 ))
             )
             ->when(
@@ -71,8 +71,8 @@ class Client extends atoum\test
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
                 $this->addGuzzleMockResponses(array(
-                    new \Guzzle\Http\Message\Response(500),
-                    new \Guzzle\Http\Message\Response(200)
+                    new \Guzzle\Http\Message\Response(500, null, '{}'),
+                    new \Guzzle\Http\Message\Response(200, null, '{}')
                 ))
             )
             ->when(
@@ -118,8 +118,8 @@ class Client extends atoum\test
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
                 $this->addGuzzleMockResponses(array(
-                    new \Guzzle\Http\Message\Response(500),
-                    new \Guzzle\Http\Message\Response(403)
+                    new \Guzzle\Http\Message\Response(500, null, '{}'),
+                    new \Guzzle\Http\Message\Response(403, null, '{}')
                 ))
             )
             ->exception(
@@ -168,7 +168,7 @@ class Client extends atoum\test
             ->given(
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
-                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200, null, '{}')))
             )
             ->when(
                 $response = $client->requestRefund(array(
@@ -200,7 +200,7 @@ class Client extends atoum\test
             ->given(
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
-                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200, null, '{}')))
             )
             ->when(
                 $response = $client->requestPayment(array(
@@ -234,7 +234,7 @@ class Client extends atoum\test
             ->given(
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
-                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200, null, '{}')))
             )
             ->when(
                 $response = $client->requestPayment(array(
@@ -268,12 +268,12 @@ class Client extends atoum\test
     {
         $this->hashGenerator = new \mock\Rezzza\PaymentBe2billBundle\Client\ParametersHashGenerator('CuirMoustache');
         $this->httpClient = new \mock\Guzzle\Http\Client;
-        
+
         $this
             ->given(
                 $this->hashGenerator->getMockController()->hash = 'HASH',
                 $client = new TestedClient($this->httpClient, 'CHUCKNORRIS', $this->hashGenerator, true, 'main'),
-                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200)))
+                $this->addGuzzleMockResponses(array(new \Guzzle\Http\Message\Response(200, null, '{}')))
             )
             ->when(
                 $response = $client->requestPayment(array('AMOUNT' => $amount))
